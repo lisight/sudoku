@@ -1,48 +1,37 @@
 '''
-使用a数组来记录数独的信息，并对可修改的格子进行修改，直到数独填写完成。使用b数组记录数独原始信息，用以判断方格是否可修改
+本程序使用a数组来记录数独的信息，并对可修改的格子进行修改，直到数独填写完成。使用b数组记录数独原始信息，用以判断方格是否可修改
+本程序使用定义了三个函数，
+一：guess，用于修改单元格数值（每次调用使单元格值加一），
+二：check：判断guess的数值是否合法
+三：find_next：寻找下一个要修改的单元格
 '''
+
+#guess函数使目标单元格数值+1，若guess函数修改的值不能通过check，则循环调用自己，直至该单元格数值合法，或者数值溢出返回错误。
+#若guess函数修改后的值通过了check，则调用find_next 函数寻找下个要修改的单元格，对其使用guess函数，直至计算出数独答案返回结果
 def guess(i,j):
-    m=i
-    n=j+1
-    #使用变量m,n计算下一个方格
-    if n>8:
-        m+=1
-        n=0
-    if m==9:
-        m=8
-        n=8
-    #当n等于9时，数独应该换行了。接下来是对方格是否可修改数据进行验证（只有数独输入时数字是0的方格才可以变更数据）
-    while(b[m][n]!=0):
-        if (m==8 and n==8):
-            m=i
-            n=j
-        elif n < 8:
-            n+=1
-        else:
-            m+=1
-            n=0
-    #print('the next blank is a',m,n)
-    #这里求出了下一个可修改的方格，（如果后续没有可修改方格，则返回正在修改的这个方格以打破while循环
-    print(m,n)
+    global target
     a[i][j] += 1
-    #开始对数据进行修改
     if a[i][j]==10:
-        print('it is not a true way',a)
         a[i][j] = 0
         return
-    #若修改后的数字是10，说明前面的数字设置不对，这里返回上一层递归（后续重新调用guess）
-    elif check(i,j):
-    #如果修改后的数字不是10，调用check函数来检查该数字是否和同行、同列、同小方格的其他数字冲突
-        if i==m&j==n:
-            print('bingo,that\'s the answer!',a)
-    #若不冲突，且是最后一个格子，那说明成功计算出了正确答案，直接输出正确答案
-        else:
-            print('now i try to guess ',m,n)
-            guess(m,n)
-    #若不冲突，且后面还有格子，那就暂时保留本格子的数据，对下一个格子的数字进行猜测。
-    guess(i,j)
-    #若由于后续格子返回了递归，说明本格子的数字设置有误，再次调用guess，猜本格数字+1是否可行
+    else:
+        if check(i,j):
+            next= find_next(i, j)
+            next1=next[0]
+            next2=next[1]
+            if (next1==i) and (next2==j):
+                print('bingo,that\'s the answer!',a)
+                target=1
+                return
+            else:
+                guess(next1,next2)
 
+        if target:
+            return
+        guess(i,j)
+
+
+#check函数通过对行、列、小九宫格的遍历，寻找是否有其他单元格数值重复
 def check(i,j):
     counter=0
     for x in range(9):
@@ -50,8 +39,8 @@ def check(i,j):
             counter+=1
         if a[x][j]==a[i][j]:
             counter+=1
-        idiv=int(i/3)
-        jdiv=int(j/3)
+        idiv =int(i/3)
+        jdiv =int(j/3)
     for o in range(3):
         for p in range(3):
             if a[idiv*3+o][jdiv*3+p]==a[i][j]:
@@ -60,6 +49,27 @@ def check(i,j):
         return 0
     else:
         return 1
+
+#find_next函数每次将‘指针’移到下一个单元格，然后对其是否可修改进行判断（b[m][n]==0）,直到找到下一个可修改的单元格返回对应坐标
+def find_next(i,j):
+    m=i
+    n=j+1
+    #使用变量m,n计算下一个方格
+    if n>8:
+        m+=1
+        n=0
+    if m==9:
+        return i,j
+    #当n等于9时，数独应该换行了。接下来是对方格是否可修改数据进行验证（只有数独输入时数字是0的方格才可以变更数据）
+    while(b[m][n]!=0):
+        if m==8 & n==8:
+            return i,j
+        elif n < 8:
+            n+=1
+        else:
+            m+=1
+            n=0
+    return m,n
 
 a=[\
 [0,6,1,0,3,0,0,2,0],\
@@ -72,4 +82,5 @@ a=[\
 [8,0,2,4,0,0,7,6,0],\
 [6,4,0,0,1,0,2,5,0]]
 b=a[:]
+target=0
 guess(0,0)
